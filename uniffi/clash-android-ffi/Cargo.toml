@@ -52,7 +52,7 @@ rustls-platform-verifier = "0.6.2" # sync with gradle/libs.versions.toml
 
 [dependencies.clash-lib]
 package = "clash-lib"
-branch = "android"
+branch = "master"
 git = "https://github.com/Watfaq/clash-rs.git"
 # path = "../../../clash-rs/clash-lib"
 features = [

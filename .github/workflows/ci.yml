@@ -10,6 +10,14 @@ on:
     tags:
       - 'v*'
 
+defaults:
+  run:
+    shell: bash
+
+env:
+  RUST_TOOLCHAIN: "stable"
+  RUSTC_BOOTSTRAP: "1"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -24,11 +32,11 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
       
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -39,7 +47,7 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: nightly-2026-01-21
+          toolchain: stable
           targets: "x86_64-unknown-linux-gnu"
           components: "rustfmt,clippy,rust-src"
 
@@ -81,17 +89,11 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      
-      - name: Cache Rust dependencies
-        uses: actions/cache@v5
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            uniffi/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          shared-key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       
       - name: Decode Keystore
         if: github.event_name != 'pull_request'

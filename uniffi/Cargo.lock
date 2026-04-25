@@ -962,7 +962,7 @@ dependencies = [
  "hyper-util",
  "hyperlocal",
  "ipnet",
- "jni 0.21.1",
+ "jni 0.22.4",
  "once_cell",
  "paranoid-android",
  "pkcs5",
@@ -979,6 +979,7 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "uniffi",
+ "url",
  "urlencoding",
  "webpki-roots 1.0.5",
 ]
@@ -5720,9 +5721,8 @@ dependencies = [
 
 [[package]]
 name = "shadowsocks"
-version = "1.24.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "482831bf9d55acf3c98e211b6c852c3dfdf1d1b0d23fdf1d887c5a4b2acad4e4"
+version = "1.25.0"
+source = "git+https://github.com/Watfaq/shadowsocks-rust?rev=dee2d932dc580e0e1b7a5a591ff5f8c51f70495e#dee2d932dc580e0e1b7a5a591ff5f8c51f70495e"
 dependencies = [
  "aes 0.8.4",
  "arc-swap",
@@ -5740,7 +5740,7 @@ dependencies = [
  "notify",
  "percent-encoding",
  "pin-project",
- "rand 0.9.4",
+ "rand 0.10.1",
  "sealed",
  "sendfd",
  "serde",

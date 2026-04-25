@@ -50,6 +50,9 @@ tokio-stream = "0.1"
 tikv-jemallocator = { version = "0.6", optional = true }
 rustls-platform-verifier = "0.6.2" # sync with gradle/libs.versions.toml
 
+# Pin pkcs5 to avoid breaking rename in 0.8.0 final (recommended → generate_recommended)
+pkcs5 = "=0.8.0-rc.13"
+
 [dependencies.clash-lib]
 package = "clash-lib"
 branch = "master"

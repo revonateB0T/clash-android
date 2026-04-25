@@ -93,7 +93,10 @@ pub extern "system" fn java_init(mut env: jni::EnvUnowned, _class: jni::objects:
 	set_runtime_builder(Box::new(builder));
 	#[cfg(target_os = "android")]
 	{
-		_ = rustls_platform_verifier::android::init_with_env(&mut env, _app);
+		let _ = env.with_env(|env| -> jni::errors::Result<()> {
+			let _ = rustls_platform_verifier::android::init_with_env(env, _app);
+			Ok(())
+		});
 	}
 	static INIT: Once = Once::new();
 	INIT.call_once(|| {

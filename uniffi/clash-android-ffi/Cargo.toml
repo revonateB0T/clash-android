@@ -44,9 +44,9 @@ urlencoding = "2"
 rustls = { version = "0.23", default-features = false, features = ["std", "aws-lc-rs"] }
 reqwest = { version = "0.13", default-features = false, features = ["rustls", "stream"] }
 tokio-stream = "0.1"
-# Memory allocator
+rustls-platform-verifier = "0.7"
 tikv-jemallocator = { version = "0.6", optional = true }
-rustls-platform-verifier = "0.6.2" # sync with gradle/libs.versions.toml
+
 tempfile = "3"
 
 [target.'cfg(unix)'.dependencies]

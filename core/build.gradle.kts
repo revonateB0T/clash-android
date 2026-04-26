@@ -26,7 +26,7 @@ val bindingRustTarget = rustTargets.find { it == "arm64" } ?: rustTargets.first(
 val bindingAbi = rustTargetToAbi.getValue(bindingRustTarget)
 val rustProjectDir = rootProject.layout.projectDirectory.dir("uniffi")
 
-fun String.rustGradleTaskSuffix() = replaceFirstChar(Char::titlecase)
+fun String.capitalizeFirst() = replaceFirstChar(Char::titlecase)
 
 fun findRustlsPlatformVerifierClasses(): File {
     val dependencyJson = providers.exec {
@@ -105,20 +105,20 @@ cargo {
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
     val rustJniLibsDir = layout.buildDirectory.dir("rustJniLibs/android").get()
-    tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
-        inputs.dir(rustJniLibsDir)
-        dependsOn("cargoBuild")
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_25
         targetCompatibility = JavaVersion.VERSION_25
     }
     libraryVariants.all {
         val variant = this
-        val variantName = variant.name.replaceFirstChar(Char::titlecase)
+        val variantName = variant.name.capitalizeFirst()
         val bDir = layout.projectDirectory.dir("src/main/java")
         val bindingLibrary =
             layout.buildDirectory.file("rustJniLibs/android/$bindingAbi/libclash_android_ffi.so")
+        tasks.named("merge${variantName}JniLibFolders").configure {
+            inputs.dir(rustJniLibsDir)
+            dependsOn("cargoBuild")
+        }
         val generateBindings = tasks.register("generate${variantName}UniFFIBindings", Exec::class) {
             workingDir = rustProjectDir.asFile
             commandLine(
@@ -127,7 +127,7 @@ android {
                 "--language", "kotlin",
                 "--out-dir", bDir.asFile.absolutePath
             )
-            dependsOn("cargoBuild${bindingRustTarget.rustGradleTaskSuffix()}")
+            dependsOn("cargoBuild${bindingRustTarget.capitalizeFirst()}")
         }
 
         // Make Java compilation depend on generating UniFFI bindings

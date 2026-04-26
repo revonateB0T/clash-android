@@ -102,7 +102,7 @@ jobs:
       - name: Gen binding
         run: |
           touch local.properties
-          ./gradlew app:assembleDebug -Prust-target=arm64
+          ./gradlew core:generateDebugUniFFIBindings -Prust-target=arm64
           ./gradlew clean
           cd uniffi
           cargo clean
@@ -116,7 +116,7 @@ jobs:
           SCCACHE_GHA_ENABLED: "true"
           RUSTC_WRAPPER: "sccache"
         run: |
-          ./gradlew assembleDebug
+          ./gradlew app:assembleDebug
       
       - name: Build Release APKs
         if: github.event_name != 'pull_request'
@@ -131,7 +131,7 @@ jobs:
           RUSTC_WRAPPER: "sccache"
         run: |
           rm -rf app/build/outputs/apk
-          ./gradlew assembleRelease
+          ./gradlew app:assembleRelease
 
       - name: Organize APKs
         if: github.event_name != 'pull_request'

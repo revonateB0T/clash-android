@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.cargo.ndk)
+	alias(libs.plugins.rust.android)
 }
 
 fun findRustlsPlatformVerifierClasses(): File {
@@ -23,7 +23,7 @@ fun findRustlsPlatformVerifierClasses(): File {
         }.let { it as Map<*, *> }["manifest_path"] as String
 
     val manifestFile = File(path)
-    return File(manifestFile.parentFile, "classes.jar")
+    return File(manifestFile.parentFile, "maven/rustls/rustls-platform-verifier/0.1.1/rustls-platform-verifier-0.1.1.aar")
 }
 
 android {
@@ -65,9 +65,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-cargoNdk {
-    module  = "uniffi"  // Directory containing Cargo.toml
-    librariesNames = arrayListOf("libclash_android_ffi.so")
+cargo {
+    module  = "../uniffi"  // Directory containing Cargo.toml
+	libname = "clash_android_ffi"
 
     extraCargoBuildArguments = arrayListOf("-p", "clash-android-ffi").apply {
         // Enable jemallocator feature on Linux
@@ -76,14 +76,15 @@ cargoNdk {
             add("jemallocator")
         }
     }
-	buildType = "release"
+	targets = listOf("arm64", "arm", "x86", "x86_64")
+	profile = "release"
 }
 
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_25
-        targetCompatibility = JavaVersion.VERSION_25
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     libraryVariants.all {
         val variant = this
@@ -93,11 +94,11 @@ android {
             workingDir = file("../uniffi")
             commandLine(
                 "cargo", "run", "-p", "uniffi-bindgen", "generate",
-                "--library", "../core/src/main/jniLibs/arm64-v8a/libclash_android_ffi.so",
+                "--library", "../core/build/rustJniLibs/android/arm64-v8a/libclash_android_ffi.so",
                 "--language", "kotlin",
                 "--out-dir", bDir.asFile.absolutePath
             )
-            dependsOn("buildCargoNdk${variantName}")
+			dependsOn("cargoBuild")
         }
 
         // Make Java compilation depend on generating UniFFI bindings
@@ -107,10 +108,5 @@ android {
         tasks.named("compile${variantName}Kotlin").configure {
             dependsOn(generateBindings)
         }
-
-        // And connectedDebugAndroidTest
-//        tasks.named("connected${variantName}AndroidTest").configure {
-//            dependsOn(generateBindings)
-//        }
     }
 }

@@ -7,27 +7,6 @@ plugins {
 	alias(libs.plugins.rust.android)
 }
 
-fun findRustlsPlatformVerifierClasses(): File {
-    val uniffiDir = File(project.rootDir, "uniffi")
-
-    val dependencyJson = providers.exec {
-        workingDir = uniffiDir
-        commandLine("cargo", "metadata", "--format-version", "1")
-    }.standardOutput.asText
-
-    val jsonSlurper = JsonSlurper()
-    val jsonData = jsonSlurper.parseText(dependencyJson.get()) as Map<*, *>
-    val packages = jsonData["packages"] as List<*>
-    val path = packages
-        .first { element ->
-            val pkg = element as Map<*, *>
-            pkg["name"] == "rustls-platform-verifier-android"
-        }.let { it as Map<*, *> }["manifest_path"] as String
-
-    val manifestFile = File(path)
-    return File(manifestFile.parentFile, "maven/rustls/rustls-platform-verifier/0.1.1/rustls-platform-verifier-0.1.1.aar")
-}
-
 android {
     namespace = "rs.clash.android.ffi"
     compileSdk = 36
@@ -54,7 +33,7 @@ kotlin {
 }
 
 dependencies {
-	implementation(files(findRustlsPlatformVerifierClasses()))
+	implementation(files("../deps/rustls-platform-verifier-0.1.1.aar"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.runtime)

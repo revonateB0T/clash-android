@@ -82,4 +82,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_25
         targetCompatibility = JavaVersion.VERSION_25
     }
+	libraryVariants.all {
+		val variantName = name.replaceFirstChar(Char::titlecase)
+
+		// Make Java compilation depend on generating UniFFI bindings
+		javaCompileProvider.get().dependsOn("cargoBuild")
+
+		// Also hook into Kotlin compilation
+		tasks.named("compile${variantName}Kotlin").configure {
+			dependsOn("cargoBuild")
+		}
+	}
 }

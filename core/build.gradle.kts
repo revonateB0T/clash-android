@@ -71,13 +71,7 @@ cargo {
     module  = "../uniffi"  // Directory containing Cargo.toml
 	libname = "clash_android_ffi"
 
-    extraCargoBuildArguments = arrayListOf("-p", "clash-android-ffi").apply {
-        // Enable jemallocator feature on Linux
-        if (System.getProperty("os.name").lowercase().contains("linux")) {
-            add("--features")
-            add("jemallocator")
-        }
-    }
+    extraCargoBuildArguments = arrayListOf("-p", "clash-android-ffi")
 	targets = listOf("arm64", "arm", "x86", "x86_64")
 	profile = "release"
 }

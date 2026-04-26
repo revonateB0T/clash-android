@@ -26,7 +26,7 @@ val bindingRustTarget = rustTargets.find { it == "arm64" } ?: rustTargets.first(
 val bindingAbi = rustTargetToAbi.getValue(bindingRustTarget)
 val rustProjectDir = rootProject.layout.projectDirectory.dir("uniffi")
 
-fun String.capitalizeFirst() = replaceFirstChar(Char::titlecase)
+fun String.capitalizeAsciiFirst() = replaceFirstChar(Char::uppercaseChar)
 
 fun findRustlsPlatformVerifierClasses(): File {
     val dependencyJson = providers.exec {
@@ -102,22 +102,26 @@ cargo {
     profile = "release"
 }
 
+val cargoBuildTask = tasks.named("cargoBuild")
+val cargoBuildBindingTargetTask =
+    tasks.named("cargoBuild${bindingRustTarget.capitalizeAsciiFirst()}")
+
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
-    val rustJniLibsDir = layout.buildDirectory.dir("rustJniLibs/android").get()
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_25
         targetCompatibility = JavaVersion.VERSION_25
     }
     libraryVariants.all {
         val variant = this
-        val variantName = variant.name.capitalizeFirst()
+        val variantName = variant.name.capitalizeAsciiFirst()
         val bDir = layout.projectDirectory.dir("src/main/java")
+        val rustJniLibsDir = layout.buildDirectory.dir("rustJniLibs/android").get()
         val bindingLibrary =
             layout.buildDirectory.file("rustJniLibs/android/$bindingAbi/libclash_android_ffi.so")
         tasks.named("merge${variantName}JniLibFolders").configure {
             inputs.dir(rustJniLibsDir)
-            dependsOn("cargoBuild")
+            dependsOn(cargoBuildTask)
         }
         val generateBindings = tasks.register("generate${variantName}UniFFIBindings", Exec::class) {
             workingDir = rustProjectDir.asFile
@@ -127,7 +131,7 @@ android {
                 "--language", "kotlin",
                 "--out-dir", bDir.asFile.absolutePath
             )
-            dependsOn("cargoBuild${bindingRustTarget.capitalizeFirst()}")
+            dependsOn(cargoBuildBindingTargetTask)
         }
 
         // Make Java compilation depend on generating UniFFI bindings

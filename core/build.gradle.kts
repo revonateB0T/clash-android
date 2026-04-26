@@ -1,8 +1,29 @@
+import groovy.json.JsonSlurper
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.cargo.ndk)
+}
+
+fun findRustlsPlatformVerifierClasses(): File {
+    val dependencyJson = providers.exec {
+        workingDir = File(project.rootDir, "uniffi")
+        commandLine("cargo", "metadata", "--format-version", "1")
+    }.standardOutput.asText
+
+    val jsonSlurper = JsonSlurper()
+    val jsonData = jsonSlurper.parseText(dependencyJson.get()) as Map<*, *>
+    val packages = jsonData["packages"] as List<*>
+    val path = packages
+        .first { element ->
+            val pkg = element as Map<*, *>
+            pkg["name"] == "rustls-platform-verifier-android"
+        }.let { it as Map<*, *> }["manifest_path"] as String
+
+    val manifestFile = File(path)
+    return File(manifestFile.parentFile, "classes.jar")
 }
 
 android {
@@ -31,7 +52,7 @@ kotlin {
 }
 
 dependencies {
-	implementation(libs.rustls.platform.verifier)
+	implementation(files(findRustlsPlatformVerifierClasses()))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.runtime)

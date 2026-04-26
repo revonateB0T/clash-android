@@ -2,6 +2,9 @@
 #target = "aarch64-linux-android"
 rustc-wrapper = "sccache"
 
+[env]
+RUSTC_BOOTSTRAP = { value = "1" }
+
 [target.aarch64-linux-android]
 linker = "aarch64-linux-android23-clang"
 

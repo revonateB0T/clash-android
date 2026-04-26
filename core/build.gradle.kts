@@ -22,17 +22,15 @@ val rustTargetToAbi =
         "x86" to "x86",
         "x86_64" to "x86_64",
     )
+val rustJniLibsRelativeDir = "rustJniLibs/android"
 val bindingRustTarget =
-    rustTargets.find { it == "arm64" }
-        ?: rustTargets.firstOrNull { it in rustTargetToAbi }
+    listOf("arm64", "x86_64", "arm", "x86").firstOrNull { it in rustTargets }
         ?: error("No Android Rust target available for UniFFI binding generation: $rustTargets")
 val bindingAbi =
     requireNotNull(rustTargetToAbi[bindingRustTarget]) {
         "Unsupported rust target for UniFFI binding generation: $bindingRustTarget"
     }
 val rustProjectDir = rootProject.layout.projectDirectory.dir("uniffi")
-
-fun String.uppercaseFirst() = replaceFirstChar(Char::uppercaseChar)
 
 fun findRustlsPlatformVerifierClasses(): File {
     val dependencyJson = providers.exec {
@@ -110,7 +108,7 @@ cargo {
 
 val cargoBuildTask = tasks.named("cargoBuild")
 val cargoBuildBindingTargetTask =
-    tasks.named("cargoBuild${bindingRustTarget.uppercaseFirst()}")
+    tasks.named("cargoBuild${bindingRustTarget.replaceFirstChar(Char::uppercaseChar)}")
 
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
@@ -120,11 +118,11 @@ android {
     }
     libraryVariants.all {
         val variant = this
-        val variantName = variant.name.uppercaseFirst()
+        val variantName = variant.name.replaceFirstChar(Char::uppercaseChar)
         val bDir = layout.projectDirectory.dir("src/main/java")
-        val rustJniLibsDirectory = layout.buildDirectory.dir("rustJniLibs/android").get()
+        val rustJniLibsDirectory = layout.buildDirectory.dir(rustJniLibsRelativeDir).get()
         val bindingLibrary =
-            layout.buildDirectory.file("rustJniLibs/android/$bindingAbi/libclash_android_ffi.so")
+            layout.buildDirectory.file("$rustJniLibsRelativeDir/$bindingAbi/libclash_android_ffi.so")
         val mergeJniLibFoldersTask = tasks.named("merge${variantName}JniLibFolders")
         mergeJniLibFoldersTask.configure {
             inputs.dir(rustJniLibsDirectory)

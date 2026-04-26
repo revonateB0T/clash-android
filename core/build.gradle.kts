@@ -83,8 +83,8 @@ cargo {
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
     }
     libraryVariants.all {
         val variant = this

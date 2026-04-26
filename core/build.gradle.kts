@@ -22,14 +22,17 @@ val rustTargetToAbi =
         "x86" to "x86",
         "x86_64" to "x86_64",
     )
-val bindingRustTarget = rustTargets.find { it == "arm64" } ?: rustTargets.first()
+val bindingRustTarget =
+    rustTargets.find { it == "arm64" }
+        ?: rustTargets.firstOrNull { it in rustTargetToAbi }
+        ?: error("No Android Rust target available for UniFFI binding generation: $rustTargets")
 val bindingAbi =
     requireNotNull(rustTargetToAbi[bindingRustTarget]) {
         "Unsupported rust target for UniFFI binding generation: $bindingRustTarget"
     }
 val rustProjectDir = rootProject.layout.projectDirectory.dir("uniffi")
 
-fun String.capitalizeFirst() = replaceFirstChar(Char::uppercaseChar)
+fun String.uppercaseFirst() = replaceFirstChar(Char::uppercaseChar)
 
 fun findRustlsPlatformVerifierClasses(): File {
     val dependencyJson = providers.exec {
@@ -107,7 +110,7 @@ cargo {
 
 val cargoBuildTask = tasks.named("cargoBuild")
 val cargoBuildBindingTargetTask =
-    tasks.named("cargoBuild${bindingRustTarget.capitalizeFirst()}")
+    tasks.named("cargoBuild${bindingRustTarget.uppercaseFirst()}")
 
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
@@ -117,7 +120,7 @@ android {
     }
     libraryVariants.all {
         val variant = this
-        val variantName = variant.name.capitalizeFirst()
+        val variantName = variant.name.uppercaseFirst()
         val bDir = layout.projectDirectory.dir("src/main/java")
         val rustJniLibsDir = layout.buildDirectory.dir("rustJniLibs/android").get()
         val bindingLibrary =

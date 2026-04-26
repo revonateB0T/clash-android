@@ -26,15 +26,14 @@ android {
     buildFeatures {
         compose = true
     }
-}
 
-androidComponents {
-    onVariants { variant ->
-        val variantName = variant.name.replaceFirstChar(Char::titlecase)
-        tasks.named("merge${variantName}JniLibFolders").configure {
+	libraryVariants.all {
+		val variantName = name.replaceFirstChar(Char::titlecase)
+
+		tasks.named("merge${variantName}JniLibFolders").configure {
 			dependsOn("cargoBuild")
 		}
-    }
+	}
 }
 
 kotlin {

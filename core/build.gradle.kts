@@ -8,8 +8,10 @@ plugins {
 }
 
 fun findRustlsPlatformVerifierClasses(): File {
+    val uniffiDir = File(project.rootDir, "uniffi")
+
     val dependencyJson = providers.exec {
-        workingDir = File(project.rootDir, "uniffi")
+        workingDir = uniffiDir
         commandLine("cargo", "metadata", "--format-version", "1")
     }.standardOutput.asText
 

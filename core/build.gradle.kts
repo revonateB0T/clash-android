@@ -122,11 +122,12 @@ android {
         val variant = this
         val variantName = variant.name.uppercaseFirst()
         val bDir = layout.projectDirectory.dir("src/main/java")
-        val rustJniLibsDir = layout.buildDirectory.dir("rustJniLibs/android").get()
+        val rustJniLibsDirectory = layout.buildDirectory.dir("rustJniLibs/android").get()
         val bindingLibrary =
             layout.buildDirectory.file("rustJniLibs/android/$bindingAbi/libclash_android_ffi.so")
-        tasks.named("merge${variantName}JniLibFolders").configure {
-            inputs.dir(rustJniLibsDir)
+        val mergeJniLibFoldersTask = tasks.named("merge${variantName}JniLibFolders")
+        mergeJniLibFoldersTask.configure {
+            inputs.dir(rustJniLibsDirectory)
             dependsOn(cargoBuildTask)
         }
         val generateBindings = tasks.register("generate${variantName}UniFFIBindings", Exec::class) {

@@ -70,6 +70,9 @@ features = [
     "shadowsocks",
     "tun",
     "wireguard",
+    "tailscale",
+    "ssh",
+    "zero_copy",
     "aws-lc-rs"
 ]
 default-features = false

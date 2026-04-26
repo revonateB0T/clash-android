@@ -215,7 +215,7 @@ async fn run_clash(
     } else {
         config.dns.default_nameserver.clone()
     };
-
+    // 需要 clash-rs 实现 respect-rules
     // let proxy_server_nameserver = if config.dns.proxy_server_nameserver.is_none() {
     //     vec![
     //         NameServer {

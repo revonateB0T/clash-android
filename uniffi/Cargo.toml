@@ -18,12 +18,12 @@ async-compat = "0.2.5"
 opt-level = "z"
 lto = true
 codegen-units = 1
-panic = "unwind"
+panic = "abort"
 strip = true
 
 [profile.dev]
 opt-level = 1
-panic = "unwind"
+panic = "abort"
 strip = "debuginfo"
 
 [profile.dev.package.backtrace]

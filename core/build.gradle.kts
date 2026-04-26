@@ -31,9 +31,9 @@ android {
 androidComponents {
     onVariants { variant ->
         val variantName = variant.name.replaceFirstChar(Char::titlecase)
-        tasks
-            .matching { it.name == "compile${variantName}Kotlin" || it.name == "compile${variantName}JavaWithJavac" }
-            .configureEach { dependsOn("cargoBuild") }
+        tasks.named("merge${variantName}JniLibFolders").configure {
+			dependsOn("cargoBuild")
+		}
     }
 }
 

@@ -63,10 +63,6 @@ jobs:
           rustup target add i686-linux-android
           rustup target add x86_64-linux-android
 
-      - uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-ndk
-
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.9
           

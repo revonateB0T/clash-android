@@ -2,19 +2,19 @@ import groovy.json.JsonSlurper
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 	alias(libs.plugins.rust.android)
 }
 
 android {
     namespace = "rs.clash.android.ffi"
-    compileSdk = 36
+    compileSdk = 37
 
     ndkVersion = rootProject.extra["ndkVersion"] as String
+    buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
     defaultConfig {
         minSdk = 23
-
+		compileSdk = 37
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -25,6 +25,15 @@ android {
 
     buildFeatures {
         compose = true
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val variantName = variant.name.replaceFirstChar(Char::titlecase)
+        tasks
+            .matching { it.name == "compile${variantName}Kotlin" || it.name == "compile${variantName}JavaWithJavac" }
+            .configureEach { dependsOn("cargoBuild") }
     }
 }
 
@@ -62,21 +71,3 @@ cargo {
     profile = "release"
 }
 
-android {
-    buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_25
-        targetCompatibility = JavaVersion.VERSION_25
-    }
-	libraryVariants.all {
-		val variantName = name.replaceFirstChar(Char::titlecase)
-
-		// Make Java compilation depend on generating UniFFI bindings
-		javaCompileProvider.get().dependsOn("cargoBuild")
-
-		// Also hook into Kotlin compilation
-		tasks.named("compile${variantName}Kotlin").configure {
-			dependsOn("cargoBuild")
-		}
-	}
-}

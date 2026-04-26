@@ -1,12 +1,11 @@
 plugins {
 	alias(libs.plugins.android.application)
-	alias(libs.plugins.kotlin.android)
 	alias(libs.plugins.kotlin.compose)
 	alias(libs.plugins.ksp)
 	alias(libs.plugins.ktlint)
 }
 
-val baseVersionName = "0.3.2"
+val baseVersionName = "0.3.3"
 val Project.verName: String get() = "${baseVersionName}$versionNameSuffix.${exec("git rev-parse --short HEAD")}"
 val Project.verCode: Int get() = exec("git rev-list --count HEAD").toInt()
 val Project.isDevVersion: Boolean get() = exec("git tag -l v$baseVersionName").isEmpty()
@@ -27,11 +26,11 @@ android {
 	val keystore = env("KEYSTORE_FILE")
 
 	namespace = "rs.clash.android"
-	compileSdk = 36
+	compileSdk = 37
 	defaultConfig {
 		applicationId = "rs.clash.android"
 		minSdk = 23
-		targetSdk = 36
+		targetSdk = 37
 		versionCode = verCode
 		versionName = verName
 
@@ -80,6 +79,7 @@ android {
 	}
 	buildFeatures {
 		compose = true
+		resValues = true
 	}
 	splits {
 		abi {

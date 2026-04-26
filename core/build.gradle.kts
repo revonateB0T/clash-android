@@ -71,11 +71,7 @@ android {
 	libraryVariants.all {
 		val variantName = name.replaceFirstChar(Char::titlecase)
 
-		// Make Java compilation depend on generating UniFFI bindings
-		javaCompileProvider.get().dependsOn("cargoBuild")
-
-		// Also hook into Kotlin compilation
-		tasks.named("compile${variantName}Kotlin").configure {
+		tasks.named("merge${variantName}JniLibFolders").configure {
 			dependsOn("cargoBuild")
 		}
 	}

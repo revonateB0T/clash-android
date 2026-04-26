@@ -73,7 +73,7 @@ cargo {
 
     extraCargoBuildArguments = arrayListOf("-p", "clash-android-ffi")
 	targets = listOf("arm64", "arm", "x86", "x86_64")
-	profile = "release"
+    profile = "release"
 }
 
 android {
@@ -81,28 +81,5 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_25
         targetCompatibility = JavaVersion.VERSION_25
-    }
-    libraryVariants.all {
-        val variant = this
-        val variantName = variant.name.replaceFirstChar(Char::titlecase)
-        val bDir = layout.projectDirectory.dir("src/main/java")
-        val generateBindings = tasks.register("generate${variantName}UniFFIBindings", Exec::class) {
-            workingDir = file("../uniffi")
-            commandLine(
-                "cargo", "run", "-p", "uniffi-bindgen", "generate",
-                "--library", "../core/build/rustJniLibs/android/arm64-v8a/libclash_android_ffi.so",
-                "--language", "kotlin",
-                "--out-dir", bDir.asFile.absolutePath
-            )
-			dependsOn("cargoBuild")
-        }
-
-        // Make Java compilation depend on generating UniFFI bindings
-        variant.javaCompileProvider.get().dependsOn(generateBindings)
-
-        // Also hook into Kotlin compilation
-        tasks.named("compile${variantName}Kotlin").configure {
-            dependsOn(generateBindings)
-        }
     }
 }

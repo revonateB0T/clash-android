@@ -99,13 +99,7 @@ pub extern "system" fn java_init(
         builder
     };
     set_runtime_builder(Box::new(builder));
-    #[cfg(target_os = "android")]
-    {
-        let _ = env.with_env(|env| -> jni::errors::Result<()> {
-            let _ = rustls_platform_verifier::android::init_with_env(env, _app);
-            Ok(())
-        });
-    }
+
     static INIT: Once = Once::new();
     INIT.call_once(|| {
         let level = if cfg!(debug_assertions) {
@@ -121,6 +115,17 @@ pub extern "system" fn java_init(
         init_logger(level.into());
         color_eyre::install().unwrap();
 
+        // Re-route panic backtraces through `tracing` so they reach
+        // logcat. color_eyre's default hook prints to stderr, which on
+        // Android is /dev/null — without this the tombstone only shows
+        // the abort message and raw `pc` offsets.
+        let prev = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |info| {
+            let bt = std::backtrace::Backtrace::force_capture();
+            error!(target: "panic", "thread panicked: {info}\n{bt}");
+            prev(info);
+        }));
+
         // Install aws-lc-rs as the default crypto provider
         if let Err(e) = rustls::crypto::aws_lc_rs::default_provider().install_default() {
             error!("Failed to install default crypto provider: {:?}", e);
@@ -129,6 +134,15 @@ pub extern "system" fn java_init(
         }
         info!("Init logger and crypto provider initialized");
     });
+    #[cfg(target_os = "android")]
+    {
+        let _ = env.with_env(|env| -> jni::errors::Result<()> {
+            if let Err(e) = rustls_platform_verifier::android::init_with_env(env, _app) {
+                error!("Failed to init rustls platform verifier: {:?}", e);
+            }
+            Ok(())
+        });
+    }
 }
 
 #[uniffi::export]
@@ -202,30 +216,30 @@ async fn run_clash(
         config.dns.default_nameserver.clone()
     };
 
-    let proxy_server_nameserver = if config.dns.proxy_server_nameserver.is_none() {
-        vec![
-            NameServer {
-                net: DNSNetMode::DoT,
-                host: Host::Domain("dns.alidns.com".to_string()),
-                port: 853,
-                interface: None,
-                proxy: None,
-            },
-            NameServer {
-                net: DNSNetMode::DoT,
-                host: Host::Domain("dot.pub".to_string()),
-                port: 853,
-                interface: None,
-                proxy: None,
-            },
-        ]
-    } else {
-        config
-            .dns
-            .proxy_server_nameserver
-            .clone()
-            .unwrap_or_default()
-    };
+    // let proxy_server_nameserver = if config.dns.proxy_server_nameserver.is_none() {
+    //     vec![
+    //         NameServer {
+    //             net: DNSNetMode::DoT,
+    //             host: Host::Domain("dns.alidns.com".to_string()),
+    //             port: 853,
+    //             interface: None,
+    //             proxy: None,
+    //         },
+    //         NameServer {
+    //             net: DNSNetMode::DoT,
+    //             host: Host::Domain("dot.pub".to_string()),
+    //             port: 853,
+    //             interface: None,
+    //             proxy: None,
+    //         },
+    //     ]
+    // } else {
+    //     config
+    //         .dns
+    //         .proxy_server_nameserver
+    //         .clone()
+    //         .unwrap_or_default()
+    // };
     // 需要 clash-rs 实现 dns 路由
     // let nameserver = if config.dns.nameserver.is_empty() {
     //     vec![
@@ -281,7 +295,7 @@ async fn run_clash(
         },
         nameserver,
         default_nameserver,
-        proxy_server_nameserver: Some(proxy_server_nameserver),
+        // proxy_server_nameserver: Some(proxy_server_nameserver),
         ..config.dns
     };
     if over.fake_ip {

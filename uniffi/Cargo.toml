@@ -18,12 +18,21 @@ async-compat = "0.2.5"
 opt-level = "z"
 lto = true
 codegen-units = 1
-panic = "abort"
+panic = "unwind"
 strip = true
+
+# Inherits from release but keeps symbol names + line tables so panic
+# backtraces printed via RUST_BACKTRACE / color_eyre are symbolicated in
+# logcat. APK gets noticeably bigger; do not ship.
+[profile.release-dbg]
+inherits = "release"
+strip = "none"
+debug = "line-tables-only"
+split-debuginfo = "off"
 
 [profile.dev]
 opt-level = 1
-panic = "abort"
+panic = "unwind"
 strip = "debuginfo"
 
 [profile.dev.package.backtrace]

@@ -38,4 +38,5 @@ replay_pid*
 local.properties
 signing.properties
 uniffi/.vscode/settings.json
-.claude
+.claude/
+.claude/settings.local.json

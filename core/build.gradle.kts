@@ -51,7 +51,14 @@ cargo {
 	libname = "clash_android_ffi"
 
     extraCargoBuildArguments = arrayListOf("-p", "clash-android-ffi")
+
+	environmentalOverrides["RUSTC_WRAPPER"] = "sccache"
+	environmentalOverrides["RUSTC_BOOTSTRAP"] = "1"
+
 	targets = listOf("arm64", "arm", "x86", "x86_64")
+//	targets = listOf("arm64")
+    // Switch to "release-dbg" to ship a build whose Rust panics print
+    // symbolicated backtraces in logcat (defined in uniffi/Cargo.toml).
     profile = "release"
 }
 

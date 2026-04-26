@@ -8,8 +8,10 @@ plugins {
 }
 
 fun findRustlsPlatformVerifierClasses(): File {
+    val uniffiDir = File(project.rootDir, "uniffi")
+
     val dependencyJson = providers.exec {
-        workingDir = File(project.rootDir, "uniffi")
+        workingDir = uniffiDir
         commandLine("cargo", "metadata", "--format-version", "1")
     }.standardOutput.asText
 
@@ -23,7 +25,25 @@ fun findRustlsPlatformVerifierClasses(): File {
         }.let { it as Map<*, *> }["manifest_path"] as String
 
     val manifestFile = File(path)
-    return File(manifestFile.parentFile, "classes.jar")
+    val jarFile = File(manifestFile.parentFile, "classes.jar")
+
+    if (!jarFile.exists()) {
+        val buildDir = File(uniffiDir, "target")
+        if (buildDir.exists()) {
+            val existing = buildDir.walkTopDown()
+                .maxDepth(12)
+                .firstOrNull { it.name == "classes.jar" }
+            if (existing != null) return existing
+        }
+
+        logger.warn("classes.jar not found for rustls-platform-verifier-android, building...")
+        project.exec {
+            workingDir = uniffiDir
+            commandLine("cargo", "build", "-p", "rustls-platform-verifier-android")
+        }
+    }
+
+    return jarFile
 }
 
 android {

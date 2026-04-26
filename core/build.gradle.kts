@@ -22,8 +22,9 @@ val rustTargetToAbi =
         "x86" to "x86",
         "x86_64" to "x86_64",
     )
-val bindingRustTarget = rustTargets.first()
+val bindingRustTarget = rustTargets.find { it == "arm64" } ?: rustTargets.first()
 val bindingAbi = rustTargetToAbi.getValue(bindingRustTarget)
+val rustProjectDir = rootProject.layout.projectDirectory.dir("uniffi")
 
 fun String.rustGradleTaskSuffix() = replaceFirstChar(Char::titlecase)
 
@@ -86,8 +87,8 @@ dependencies {
 }
 
 cargo {
-    module = "../uniffi"
-    targetDirectory = "../uniffi/target"
+    module = rustProjectDir.asFile.absolutePath
+    targetDirectory = rustProjectDir.dir("target").asFile.absolutePath
     libname = "clash_android_ffi"
     targets = rustTargets
 
@@ -104,7 +105,7 @@ cargo {
 android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
     val rustJniLibsDir = layout.buildDirectory.dir("rustJniLibs/android").get()
-    tasks.matching { it.name.matches(Regex("merge.*JniLibFolders")) }.configureEach {
+    tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
         inputs.dir(rustJniLibsDir)
         dependsOn("cargoBuild")
     }
@@ -119,7 +120,7 @@ android {
         val bindingLibrary =
             layout.buildDirectory.file("rustJniLibs/android/$bindingAbi/libclash_android_ffi.so")
         val generateBindings = tasks.register("generate${variantName}UniFFIBindings", Exec::class) {
-            workingDir = file("../uniffi")
+            workingDir = rustProjectDir.asFile
             commandLine(
                 "cargo", "run", "-p", "uniffi-bindgen", "generate",
                 "--library", bindingLibrary.get().asFile.absolutePath,

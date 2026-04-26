@@ -23,6 +23,7 @@ fun Project.exec(command: String): String =
 fun env(key: String): String? = System.getenv(key).let { if (it.isNullOrEmpty()) null else it }
 
 android {
+	buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
 	val keystore = env("KEYSTORE_FILE")
 
 	namespace = "rs.clash.android"

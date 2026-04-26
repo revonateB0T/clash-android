@@ -226,19 +226,40 @@ async fn run_clash(
             .clone()
             .unwrap_or_default()
     };
+    // 需要 clash-rs 实现 dns 路由
+    // let nameserver = if config.dns.nameserver.is_empty() {
+    //     vec![
+    //         NameServer {
+    //             net: DNSNetMode::DoT,
+    //             host: Host::Domain("one.one.one.one".to_string()),
+    //             port: 853,
+    //             interface: None,
+    //             proxy: None,
+    //         },
+    //         NameServer {
+    //             net: DNSNetMode::DoT,
+    //             host: Host::Domain("dns.google".to_string()),
+    //             port: 853,
+    //             interface: None,
+    //             proxy: None,
+    //         },
+    //     ]
+    // } else {
+    //     config.dns.nameserver.clone()
+    // };
 
     let nameserver = if config.dns.nameserver.is_empty() {
         vec![
             NameServer {
                 net: DNSNetMode::DoT,
-                host: Host::Domain("one.one.one.one".to_string()),
+                host: Host::Domain("dns.alidns.com".to_string()),
                 port: 853,
                 interface: None,
                 proxy: None,
             },
             NameServer {
                 net: DNSNetMode::DoT,
-                host: Host::Domain("dns.google".to_string()),
+                host: Host::Domain("dot.pub".to_string()),
                 port: 853,
                 interface: None,
                 proxy: None,
